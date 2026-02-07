@@ -83,6 +83,54 @@ describe('extractFonts', () => {
     expect(fonts[0].pageNumbers).toEqual(new Set([1, 2]));
   });
 
+  it('IdentityToUnicodeMap (firstChar/lastChar のみ) は toUnicode=null として扱う', async () => {
+    const OPS_SET_FONT = 37;
+    const doc = createMockPdfDoc([{
+      fonts: {
+        'g_d0_f1': {
+          loadedName: 'g_d0_f1',
+          name: 'MeiryoUI',
+          type: 'CIDFontType2',
+          composite: true,
+          missingFile: false,
+          bold: false,
+          toUnicode: { firstChar: 0, lastChar: 65535 },
+        },
+      },
+      opFnArray: [OPS_SET_FONT],
+      opArgsArray: [['g_d0_f1', 12]],
+    }]);
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const fonts = await extractFonts(doc as any);
+    expect(fonts).toHaveLength(1);
+    expect(fonts[0].toUnicode).toBeNull();
+  });
+
+  it('_map を持つ toUnicode は正常に処理する', async () => {
+    const OPS_SET_FONT = 37;
+    const doc = createMockPdfDoc([{
+      fonts: {
+        'g_d0_f1': {
+          loadedName: 'g_d0_f1',
+          name: 'HiraginoSans',
+          type: 'CIDFontType0',
+          composite: true,
+          missingFile: false,
+          bold: false,
+          toUnicode: { _map: [undefined, 'A', undefined, 'B'] },
+        },
+      },
+      opFnArray: [OPS_SET_FONT],
+      opArgsArray: [['g_d0_f1', 12]],
+    }]);
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const fonts = await extractFonts(doc as any);
+    expect(fonts).toHaveLength(1);
+    expect(fonts[0].toUnicode).not.toBeNull();
+  });
+
   it('フォントがないページをスキップする', async () => {
     const doc = createMockPdfDoc([{
       fonts: {},

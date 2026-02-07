@@ -4,17 +4,47 @@ import type { PdfFontInfo, ToUnicodeMap } from './types';
 /** OPS.setFont の値 */
 const OPS_SET_FONT = 37;
 
+/**
+ * pdf.js の IdentityToUnicodeMap か判定する.
+ * 構造化クローン後は { firstChar, lastChar } のみのオブジェクトになる.
+ * Identity マッピングは実質的に ToUnicode なしと等価なため除外する.
+ */
+function isIdentityToUnicodeMap(raw: unknown): boolean {
+  if (typeof raw !== 'object' || raw === null) return false;
+  return 'firstChar' in raw && 'lastChar' in raw && !('_map' in raw);
+}
+
 /** toUnicode データを ToUnicodeMap インターフェースに正規化する */
 function normalizeToUnicode(
   raw: unknown,
 ): ToUnicodeMap | null {
   if (!raw) return null;
 
+  // IdentityToUnicodeMap は ToUnicode なしとして扱う
+  if (isIdentityToUnicodeMap(raw)) return null;
+
   // forEach メソッドを持つオブジェクト (pdf.js ToUnicodeMap)
   if (typeof raw === 'object' && raw !== null && 'forEach' in raw) {
     const obj = raw as { forEach: (cb: (charCode: number, unicodeStr: string | number) => void) => void };
     if (typeof obj.forEach === 'function') {
       return obj;
+    }
+  }
+
+  // 構造化クローン後の _map プロパティを持つオブジェクト (pdf.js ToUnicodeMap)
+  if (typeof raw === 'object' && raw !== null && '_map' in raw) {
+    const mapArray = (raw as { _map: (string | number | undefined)[] })._map;
+    if (Array.isArray(mapArray)) {
+      return {
+        forEach(callback: (charCode: number, unicodeStr: string | number) => void): void {
+          for (let i = 0; i < mapArray.length; i++) {
+            const value = mapArray[i];
+            if (value !== undefined) {
+              callback(i, value);
+            }
+          }
+        },
+      };
     }
   }
 
