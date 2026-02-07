@@ -1,1 +1,65 @@
 /* PDF Slide Doctor - カスタムスタイル */
+/* Pico CSS のセマンティックスタイルを補完する最小限の CSS */
+
+#drop-zone {
+  padding: 2rem;
+  border: 2px dashed var(--pico-muted-border-color);
+  border-radius: var(--pico-border-radius);
+  text-align: center;
+  transition: border-color 0.2s;
+}
+
+#drop-zone[aria-busy="true"] {
+  border-color: var(--pico-primary);
+  border-style: solid;
+}
+
+#drop-error {
+  color: var(--pico-del-color);
+  min-height: 1.5em;
+}
+
+/* リスクレベル別の色分け */
+.risk-high {
+  border-left: 4px solid var(--pico-del-color);
+  padding-left: 1rem;
+  margin-bottom: 1rem;
+}
+
+.risk-high > summary {
+  color: var(--pico-del-color);
+  font-weight: bold;
+}
+
+.risk-medium {
+  border-left: 4px solid #f59e0b;
+  padding-left: 1rem;
+  margin-bottom: 1rem;
+}
+
+.risk-medium > summary {
+  color: #f59e0b;
+  font-weight: bold;
+}
+
+.risk-low {
+  border-left: 4px solid var(--pico-ins-color);
+  padding-left: 1rem;
+  margin-bottom: 1rem;
+}
+
+.risk-low > summary {
+  color: var(--pico-ins-color);
+  font-weight: bold;
+}
+
+/* 診断項目 */
+#report article {
+  margin-bottom: 0.5rem;
+  padding: 0.75rem;
+}
+
+#report article h4 {
+  margin-bottom: 0.25rem;
+  font-size: 1rem;
+}
