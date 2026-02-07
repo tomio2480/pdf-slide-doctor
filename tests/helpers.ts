@@ -19,7 +19,7 @@ export function createMockToUnicode(
   mapping: Record<number, string>,
 ): ToUnicodeMap {
   return {
-    forEach(callback: (charCode: number, unicodeStr: string) => void): void {
+    forEach(callback: (charCode: number, unicodeStr: string | number) => void): void {
       for (const [code, str] of Object.entries(mapping)) {
         callback(Number(code), str);
       }

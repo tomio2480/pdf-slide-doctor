@@ -12,7 +12,7 @@ function normalizeToUnicode(
 
   // forEach メソッドを持つオブジェクト (pdf.js ToUnicodeMap)
   if (typeof raw === 'object' && raw !== null && 'forEach' in raw) {
-    const obj = raw as { forEach: (cb: (charCode: number, unicodeStr: string) => void) => void };
+    const obj = raw as { forEach: (cb: (charCode: number, unicodeStr: string | number) => void) => void };
     if (typeof obj.forEach === 'function') {
       return obj;
     }
@@ -20,11 +20,11 @@ function normalizeToUnicode(
 
   // プレーンオブジェクト { charCode: unicodeStr }
   if (typeof raw === 'object' && raw !== null) {
-    const map = raw as Record<string, string>;
+    const map = raw as Record<string, string | number>;
     return {
-      forEach(callback: (charCode: number, unicodeStr: string) => void): void {
-        for (const [code, str] of Object.entries(map)) {
-          callback(Number(code), str);
+      forEach(callback: (charCode: number, unicodeStr: string | number) => void): void {
+        for (const [code, value] of Object.entries(map)) {
+          callback(Number(code), value);
         }
       },
     };

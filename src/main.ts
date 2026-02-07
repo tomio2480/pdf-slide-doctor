@@ -45,6 +45,8 @@ async function analyzePdf(file: File): Promise<void> {
     const pdfDoc = await pdfjsLib.getDocument({
       data: new Uint8Array(arrayBuffer),
       fontExtraProperties: true,
+      cMapUrl: `${import.meta.env.BASE_URL}cmaps/`,
+      cMapPacked: true,
     }).promise;
 
     const fonts = await extractFonts(pdfDoc);

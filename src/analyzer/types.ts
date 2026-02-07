@@ -22,7 +22,7 @@ export interface PdfFontInfo {
 
 /** ToUnicode マッピングの走査インターフェース */
 export interface ToUnicodeMap {
-  forEach(callback: (charCode: number, unicodeStr: string) => void): void;
+  forEach(callback: (charCode: number, unicodeStr: string | number) => void): void;
 }
 
 /** 診断パターンの識別子 */

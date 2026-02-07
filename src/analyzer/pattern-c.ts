@@ -10,9 +10,14 @@ export function detectKangxiMismapping(fonts: PdfFontInfo[]): DiagnosticItem[] {
     let lowPriorityCount = 0;
     const examples: string[] = [];
 
-    font.toUnicode.forEach((_charCode: number, unicodeStr: string) => {
-      if (!unicodeStr || unicodeStr.length === 0) return;
-      const codePoint = unicodeStr.codePointAt(0);
+    font.toUnicode.forEach((_charCode: number, unicodeValue: string | number) => {
+      // pdf.js が数値を返す場合がある
+      let codePoint: number | undefined;
+      if (typeof unicodeValue === 'number') {
+        codePoint = unicodeValue;
+      } else if (typeof unicodeValue === 'string' && unicodeValue.length > 0) {
+        codePoint = unicodeValue.codePointAt(0);
+      }
       if (codePoint !== undefined && isLowPriorityUnicode(codePoint)) {
         lowPriorityCount++;
         if (examples.length < 5) {
