@@ -52,17 +52,30 @@ export function createDropZone(
     callbacks.onFileSelected(file);
   }
 
-  section.addEventListener('dragover', (e) => {
+  // dragenter/dragleave のカウンター方式で子要素バブリングによる振動を防止する
+  let dragCounter = 0;
+
+  section.addEventListener('dragenter', (e) => {
     e.preventDefault();
+    dragCounter++;
     section.setAttribute('aria-busy', 'true');
   });
 
+  section.addEventListener('dragover', (e) => {
+    e.preventDefault();
+  });
+
   section.addEventListener('dragleave', () => {
-    section.removeAttribute('aria-busy');
+    dragCounter--;
+    if (dragCounter <= 0) {
+      dragCounter = 0;
+      section.removeAttribute('aria-busy');
+    }
   });
 
   section.addEventListener('drop', (e) => {
     e.preventDefault();
+    dragCounter = 0;
     section.removeAttribute('aria-busy');
     const files = e.dataTransfer?.files;
     if (files && files.length > 0) {
