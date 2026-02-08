@@ -1,0 +1,27 @@
+name: pdffonts 突き合わせ検証
+
+on:
+  workflow_dispatch:
+  schedule:
+    # 毎週月曜 09:00 UTC (JST 18:00)
+    - cron: '0 9 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - name: Install poppler-utils
+        run: sudo apt-get update && sudo apt-get install -y poppler-utils
+      - name: Verify pdffonts is available
+        run: pdffonts -v 2>&1 || true
+      - name: Run pdffonts comparison tests
+        run: npx vitest run tests/integration/pdffonts-comparison.test.ts

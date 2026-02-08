@@ -9,8 +9,9 @@
     "preview": "vite preview",
     "test": "vitest",
     "test:run": "vitest run",
-    "lint": "eslint src/ tests/",
-    "typecheck": "tsc --noEmit"
+    "lint": "eslint src/ tests/ scripts/",
+    "typecheck": "tsc --noEmit",
+    "generate:pdffonts": "tsx scripts/generate-pdffonts-expected.ts"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
