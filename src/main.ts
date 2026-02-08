@@ -9,6 +9,8 @@ import { detectUnembeddedFonts } from './analyzer/pattern-a';
 import { detectMissingToUnicode } from './analyzer/pattern-b';
 import { detectKangxiMismapping } from './analyzer/pattern-c';
 import { detectBoldUnembedded } from './analyzer/pattern-h';
+import { scanRawFontDicts } from './analyzer/raw-pdf-parser';
+import { refineFontsWithRawScan } from './analyzer/refine-to-unicode';
 import type { DiagnosticReport, DiagnosticItem } from './analyzer/types';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
@@ -42,6 +44,8 @@ async function analyzePdf(file: File): Promise<void> {
 
   try {
     const arrayBuffer = await file.arrayBuffer();
+    // pdf.js 用と raw スキャン用にバッファを複製する（pdf.js が ArrayBuffer を detach する場合があるため）
+    const rawScanBuffer = arrayBuffer.slice(0);
     const pdfDoc = await pdfjsLib.getDocument({
       data: new Uint8Array(arrayBuffer),
       fontExtraProperties: true,
@@ -49,8 +53,12 @@ async function analyzePdf(file: File): Promise<void> {
       cMapPacked: true,
     }).promise;
 
-    const fonts = await extractFonts(pdfDoc);
+    const rawFonts = await extractFonts(pdfDoc);
     const trInfos = await extractTextRenderingModes(pdfDoc);
+
+    // raw PDF スキャンで ToUnicode 合成を補正する
+    const rawEntries = scanRawFontDicts(rawScanBuffer);
+    const fonts = refineFontsWithRawScan(rawFonts, rawEntries);
 
     // loadedName → name 変換
     const nameMap = new Map(fonts.map((f) => [f.loadedName, f.name]));

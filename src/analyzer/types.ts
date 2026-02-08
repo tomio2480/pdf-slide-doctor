@@ -50,6 +50,14 @@ export interface DiagnosticReport {
   items: DiagnosticItem[];
 }
 
+/** raw PDF パーサーによるフォント辞書のスキャン結果 */
+export interface RawFontEntry {
+  /** BaseFont 名 */
+  baseFontName: string;
+  /** /ToUnicode キーの有無 (unknown = 検出不能) */
+  hasToUnicode: boolean | 'unknown';
+}
+
 /** パターン F 用: ページ内のテキストレンダリングモード情報 */
 export interface TextRenderingModeInfo {
   pageNumber: number;

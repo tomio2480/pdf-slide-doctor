@@ -8,6 +8,8 @@ import { detectUnembeddedFonts } from '../../src/analyzer/pattern-a';
 import { detectMissingToUnicode } from '../../src/analyzer/pattern-b';
 import { detectKangxiMismapping } from '../../src/analyzer/pattern-c';
 import { detectBoldUnembedded } from '../../src/analyzer/pattern-h';
+import { scanRawFontDicts } from '../../src/analyzer/raw-pdf-parser';
+import { refineFontsWithRawScan } from '../../src/analyzer/refine-to-unicode';
 import type { DiagnosticItem } from '../../src/analyzer/types';
 
 const FIXTURES_DIR = path.resolve(__dirname, '../fixtures');
@@ -21,7 +23,13 @@ export interface AnalysisResult {
 
 /** PDF ファイルを読み込んで全パターンの診断結果を返す */
 export async function analyzePdf(filePath: string): Promise<AnalysisResult> {
-  const data = new Uint8Array(fs.readFileSync(filePath));
+  const fileBuffer = fs.readFileSync(filePath);
+  // pdf.js 用と raw スキャン用にバッファを複製する（pdf.js が ArrayBuffer を detach するため）
+  const data = new Uint8Array(fileBuffer);
+  const rawScanBuffer = fileBuffer.buffer.slice(
+    fileBuffer.byteOffset,
+    fileBuffer.byteOffset + fileBuffer.byteLength,
+  );
   const cMapUrl = path.resolve(__dirname, '../../node_modules/pdfjs-dist/cmaps/');
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const pdfDoc = await (pdfjsLib as any).getDocument({
@@ -32,8 +40,12 @@ export async function analyzePdf(filePath: string): Promise<AnalysisResult> {
     cMapPacked: true,
   }).promise;
 
-  const fonts = await extractFonts(pdfDoc);
+  const rawFonts = await extractFonts(pdfDoc);
   const trInfos = await extractTextRenderingModes(pdfDoc);
+
+  // raw PDF スキャンで ToUnicode 合成を補正する
+  const rawEntries = scanRawFontDicts(rawScanBuffer);
+  const fonts = refineFontsWithRawScan(rawFonts, rawEntries);
 
   // loadedName → name 変換
   const nameMap = new Map(fonts.map((f) => [f.loadedName, f.name]));
