@@ -1,6 +1,6 @@
 /**
  * 指定された Unicode コードポイントが低優先ブロックに属するかを判定する.
- * xdvipdfmx の is_PUA_or_presentation ロジックに基づく.
+ * Unicode Standard のブロック定義に基づく.
  */
 export function isLowPriorityUnicode(codePoint: number): boolean {
   return (
