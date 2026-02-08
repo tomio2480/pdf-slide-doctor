@@ -23,6 +23,14 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y poppler-utils
       - name: Verify pdffonts is available
         run: pdffonts -v 2>&1 || true
+      - name: Download test PDF fixtures
+        run: |
+          mkdir -p tests/fixtures
+          gh release download test-fixtures-v1 \
+            --dir tests/fixtures \
+            --pattern '*.pdf'
+        env:
+          GH_TOKEN: ${{ github.token }}
       - name: Generate pdffonts expected JSON
         run: npm run generate:pdffonts
       - name: Run pdffonts comparison tests
