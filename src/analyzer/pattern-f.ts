@@ -20,7 +20,7 @@ export async function extractTextRenderingModes(
     const page = await pdfDoc.getPage(i);
     const opList = await page.getOperatorList();
 
-    let currentFont = 'unknown';
+    let currentFont: string | null = null;
     let currentLineWidth: number | null = null;
 
     for (let j = 0; j < opList.fnArray.length; j++) {
@@ -33,7 +33,7 @@ export async function extractTextRenderingModes(
         currentFont = args[0] as string;
       } else if (fn === OPS_SET_TEXT_RENDERING_MODE) {
         const mode = args[0] as number;
-        if (mode === 2) {
+        if (mode === 2 && currentFont !== null) {
           results.push({
             pageNumber: i,
             fontName: currentFont,

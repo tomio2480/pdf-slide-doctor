@@ -1,11 +1,12 @@
 import type { PdfFontInfo, DiagnosticItem } from './types';
 import { isLowPriorityUnicode } from '../utils/unicode-blocks';
+import { isSymbolFont } from '../utils/symbol-font';
 
 export function detectKangxiMismapping(fonts: PdfFontInfo[]): DiagnosticItem[] {
   const results: DiagnosticItem[] = [];
 
   for (const font of fonts) {
-    if (!font.composite || !font.toUnicode) continue;
+    if (!font.composite || !font.toUnicode || isSymbolFont(font.name)) continue;
 
     let lowPriorityCount = 0;
     const examples: string[] = [];

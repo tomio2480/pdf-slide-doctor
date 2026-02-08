@@ -57,6 +57,26 @@ describe('detectKangxiMismapping (Pattern C)', () => {
     expect(results[0].details?.lowPriorityCount).toBe(3);
   });
 
+  it('シンボルフォント (Wingdings) の PUA マッピングは検出しない', () => {
+    const fonts = [createFont({
+      composite: true,
+      name: 'EECUUG+Wingdings-Regular',
+      toUnicode: createMockToUnicode({ 132: '\uF06E' }),
+    })];
+    const results = detectKangxiMismapping(fonts);
+    expect(results).toHaveLength(0);
+  });
+
+  it('シンボルフォント (ZapfDingbats) の PUA マッピングは検出しない', () => {
+    const fonts = [createFont({
+      composite: true,
+      name: 'ZapfDingbats',
+      toUnicode: createMockToUnicode({ 100: '\uF041' }),
+    })];
+    const results = detectKangxiMismapping(fonts);
+    expect(results).toHaveLength(0);
+  });
+
   it('マッピング例は最大5件まで記録する', () => {
     const mapping: Record<number, string> = {};
     for (let i = 0; i < 10; i++) {

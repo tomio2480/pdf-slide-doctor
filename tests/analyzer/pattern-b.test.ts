@@ -48,4 +48,61 @@ describe('detectMissingToUnicode (Pattern B)', () => {
     const results = detectMissingToUnicode(fonts);
     expect(results).toHaveLength(0);
   });
+
+  it('macOS CJK フォントの場合は Keynote 向け remedy を含む', () => {
+    const fonts = [createFont({
+      composite: true,
+      toUnicode: null,
+      name: 'HiraKakuProN-W3',
+      type: 'CIDFontType0',
+      subtype: 'CIDFontType0C',
+    })];
+    const results = detectMissingToUnicode(fonts);
+    expect(results).toHaveLength(1);
+    expect(results[0].remedy).toContain('Keynote');
+    expect(results[0].remedy).toContain('PostScript');
+    expect(results[0].details?.possibleKeynote).toBe(true);
+  });
+
+  it('サブセットタグ付き macOS CJK フォントでも Keynote 向け remedy を含む', () => {
+    const fonts = [createFont({
+      composite: true,
+      toUnicode: null,
+      name: 'ABCDEF+HiraginoSans-W6',
+      type: 'CIDFontType0',
+      subtype: 'CIDFontType0C',
+    })];
+    const results = detectMissingToUnicode(fonts);
+    expect(results).toHaveLength(1);
+    expect(results[0].remedy).toContain('Keynote');
+    expect(results[0].details?.possibleKeynote).toBe(true);
+  });
+
+  it('macOS CJK フォントでも CIDFontType2 の場合は汎用 remedy', () => {
+    const fonts = [createFont({
+      composite: true,
+      toUnicode: null,
+      name: 'YuGothic-Bold',
+      type: 'CIDFontType2',
+      subtype: 'CIDFontType2',
+    })];
+    const results = detectMissingToUnicode(fonts);
+    expect(results).toHaveLength(1);
+    expect(results[0].remedy).not.toContain('Keynote');
+    expect(results[0].details?.possibleKeynote).toBeUndefined();
+  });
+
+  it('Windows フォントの場合は汎用 remedy', () => {
+    const fonts = [createFont({
+      composite: true,
+      toUnicode: null,
+      name: 'MeiryoUI-Bold',
+      type: 'CIDFontType2',
+      subtype: 'CIDFontType2',
+    })];
+    const results = detectMissingToUnicode(fonts);
+    expect(results).toHaveLength(1);
+    expect(results[0].remedy).not.toContain('Keynote');
+    expect(results[0].remedy).toContain('PDF 出力元アプリケーション');
+  });
 });
