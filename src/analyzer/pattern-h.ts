@@ -2,7 +2,7 @@ import type { PdfFontInfo, DiagnosticItem } from './types';
 
 const BOLD_PATTERN = /Bold|Heavy|Black|W[6-9](?:\b|$)/i;
 
-function isBoldFontName(name: string): boolean {
+export function isBoldFontName(name: string): boolean {
   return BOLD_PATTERN.test(name);
 }
 

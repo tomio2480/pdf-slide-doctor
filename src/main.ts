@@ -76,7 +76,7 @@ async function analyzePdf(file: File): Promise<void> {
     );
     const patternB = detectMissingToUnicode(fonts);
     const patternC = detectKangxiMismapping(fonts);
-    const patternF = detectPseudoBold(resolvedTrInfos);
+    const patternF = detectPseudoBold(resolvedTrInfos, fonts);
 
     const allItems: DiagnosticItem[] = [
       ...patternA,

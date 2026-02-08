@@ -8,11 +8,18 @@ describe('detectMissingToUnicode (Pattern B)', () => {
       composite: true,
       toUnicode: null,
       name: 'KozMinPr6N-Regular',
+      type: 'CIDFontType0',
+      subtype: 'CIDFontType0C',
     })];
     const results = detectMissingToUnicode(fonts);
     expect(results).toHaveLength(1);
     expect(results[0].patternId).toBe('B');
     expect(results[0].riskLevel).toBe('high');
+    expect(results[0].remedy).toContain('PDF 出力元アプリケーション');
+    expect(results[0].details).toEqual({
+      fontType: 'CIDFontType0',
+      fontSubtype: 'CIDFontType0C',
+    });
   });
 
   it('toUnicode が存在する場合は検出しない', () => {

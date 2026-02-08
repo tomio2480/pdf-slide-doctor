@@ -1,5 +1,7 @@
 import type { PDFDocumentProxy } from 'pdfjs-dist';
-import type { TextRenderingModeInfo, DiagnosticItem } from './types';
+import type { TextRenderingModeInfo, PdfFontInfo, DiagnosticItem } from './types';
+import { extractFamilyName } from '../utils/font-family';
+import { isBoldFontName } from './pattern-h';
 
 /** OPS 定数 */
 const OPS_SET_LINE_WIDTH = 2;
@@ -51,7 +53,10 @@ export async function extractTextRenderingModes(
 /**
  * TextRenderingModeInfo のリストからフォントごとに統合した診断結果を生成する.
  */
-export function detectPseudoBold(trInfos: TextRenderingModeInfo[]): DiagnosticItem[] {
+export function detectPseudoBold(
+  trInfos: TextRenderingModeInfo[],
+  fonts: PdfFontInfo[],
+): DiagnosticItem[] {
   const fontMap = new Map<string, {
     pageNumbers: Set<number>;
     lineWidths: Set<number | null>;
@@ -71,13 +76,27 @@ export function detectPseudoBold(trInfos: TextRenderingModeInfo[]): DiagnosticIt
     entry.lineWidths.add(info.lineWidth);
   }
 
-  return Array.from(fontMap.entries()).map(([fontName, data]) => ({
-    patternId: 'F' as const,
-    riskLevel: 'medium' as const,
-    fontName,
-    pageNumbers: Array.from(data.pageNumbers).sort((a, b) => a - b),
-    message: `フォント「${fontName}」で疑似ボールド (Tr=2, Fill then Stroke) が使用されています`,
-    remedy: 'PDF 作成元で実際の Bold フォントを使用して再出力してください',
-    details: { lineWidths: Array.from(data.lineWidths) },
-  }));
+  return Array.from(fontMap.entries()).map(([fontName, data]) => {
+    const familyName = extractFamilyName(fontName);
+    const boldInPdf = fonts.some(
+      (f) => extractFamilyName(f.name) === familyName && isBoldFontName(f.name),
+    );
+
+    let remedy: string;
+    if (boldInPdf) {
+      remedy = '同 PDF 内に Bold 版が存在します。PDF 作成元で Bold フォントを直接使用して再出力してください';
+    } else {
+      remedy = 'PDF 作成元で実際の Bold フォントを使用するか、太字の使用を見直してください';
+    }
+
+    return {
+      patternId: 'F' as const,
+      riskLevel: 'medium' as const,
+      fontName,
+      pageNumbers: Array.from(data.pageNumbers).sort((a, b) => a - b),
+      message: `フォント「${fontName}」で疑似ボールド (Tr=2, Fill then Stroke) が使用されています`,
+      remedy,
+      details: { lineWidths: Array.from(data.lineWidths) },
+    };
+  });
 }
