@@ -49,7 +49,7 @@ describe('detectMissingToUnicode (Pattern B)', () => {
     expect(results).toHaveLength(0);
   });
 
-  it('macOS CJK フォントの場合は Keynote 向け remedy を含む', () => {
+  it('macOS CJK フォントの場合は macOS 向け remedy を含む', () => {
     const fonts = [createFont({
       composite: true,
       toUnicode: null,
@@ -59,12 +59,12 @@ describe('detectMissingToUnicode (Pattern B)', () => {
     })];
     const results = detectMissingToUnicode(fonts);
     expect(results).toHaveLength(1);
-    expect(results[0].remedy).toContain('Keynote');
+    expect(results[0].remedy).toContain('macOS アプリケーション');
     expect(results[0].remedy).toContain('PostScript');
-    expect(results[0].details?.possibleKeynote).toBe(true);
+    expect(results[0].details?.possibleMacOS).toBe(true);
   });
 
-  it('サブセットタグ付き macOS CJK フォントでも Keynote 向け remedy を含む', () => {
+  it('サブセットタグ付き macOS CJK フォントでも macOS 向け remedy を含む', () => {
     const fonts = [createFont({
       composite: true,
       toUnicode: null,
@@ -74,8 +74,8 @@ describe('detectMissingToUnicode (Pattern B)', () => {
     })];
     const results = detectMissingToUnicode(fonts);
     expect(results).toHaveLength(1);
-    expect(results[0].remedy).toContain('Keynote');
-    expect(results[0].details?.possibleKeynote).toBe(true);
+    expect(results[0].remedy).toContain('macOS アプリケーション');
+    expect(results[0].details?.possibleMacOS).toBe(true);
   });
 
   it('macOS CJK フォントでも CIDFontType2 の場合は汎用 remedy', () => {
@@ -88,8 +88,8 @@ describe('detectMissingToUnicode (Pattern B)', () => {
     })];
     const results = detectMissingToUnicode(fonts);
     expect(results).toHaveLength(1);
-    expect(results[0].remedy).not.toContain('Keynote');
-    expect(results[0].details?.possibleKeynote).toBeUndefined();
+    expect(results[0].remedy).not.toContain('macOS アプリケーション');
+    expect(results[0].details?.possibleMacOS).toBeUndefined();
   });
 
   it('Windows フォントの場合は汎用 remedy', () => {
@@ -102,7 +102,7 @@ describe('detectMissingToUnicode (Pattern B)', () => {
     })];
     const results = detectMissingToUnicode(fonts);
     expect(results).toHaveLength(1);
-    expect(results[0].remedy).not.toContain('Keynote');
+    expect(results[0].remedy).not.toContain('macOS アプリケーション');
     expect(results[0].remedy).toContain('PDF 出力元アプリケーション');
   });
 });
