@@ -6,6 +6,12 @@ const RISK_LABELS: Record<RiskLevel, string> = {
   low: '低',
 };
 
+const RISK_EMOJI: Record<RiskLevel, string> = {
+  high: '\u{1F6A8}',
+  medium: '\u26A0\uFE0F',
+  low: '\u2705\uFE0F',
+};
+
 export function renderReport(
   container: HTMLElement,
   report: DiagnosticReport,
@@ -65,7 +71,7 @@ function renderItem(item: DiagnosticItem): HTMLElement {
   const article = document.createElement('article');
 
   const heading = document.createElement('h4');
-  heading.textContent = `[パターン ${item.patternId}] ${item.message}`;
+  heading.textContent = `${RISK_EMOJI[item.riskLevel]} [パターン ${item.patternId}] ${item.message}`;
   article.appendChild(heading);
 
   const pages = document.createElement('p');
