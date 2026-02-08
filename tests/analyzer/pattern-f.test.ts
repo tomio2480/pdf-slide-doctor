@@ -80,6 +80,20 @@ describe('detectPseudoBold (Pattern F)', () => {
     expect(results[0].remedy).not.toContain('Bold 版が存在します');
   });
 
+  it('Bold フォント自体に疑似ボールドが適用されている場合は二重適用の remedy', () => {
+    const trInfos: TextRenderingModeInfo[] = [
+      { pageNumber: 2, fontName: 'URLJGN+Calibri-Bold', renderingMode: 2, lineWidth: 0.5 },
+    ];
+    const fonts = [
+      createFont({ name: 'URLJGN+Calibri-Bold' }),
+      createFont({ name: 'ABCDEF+Calibri' }),
+    ];
+    const results = detectPseudoBold(trInfos, fonts);
+    expect(results).toHaveLength(1);
+    expect(results[0].remedy).toContain('Bold フォントにさらに疑似ボールド');
+    expect(results[0].remedy).not.toContain('Bold 版が存在します');
+  });
+
   it('サブセットタグなしのフォントでも Bold 版検出が動作する', () => {
     const trInfos: TextRenderingModeInfo[] = [
       { pageNumber: 1, fontName: 'HiraKakuStdN-W3', renderingMode: 2, lineWidth: 0.5 },

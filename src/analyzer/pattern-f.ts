@@ -82,8 +82,12 @@ export function detectPseudoBold(
       (f) => extractFamilyName(f.name) === familyName && isBoldFontName(f.name),
     );
 
+    const selfIsBold = isBoldFontName(fontName);
+
     let remedy: string;
-    if (boldInPdf) {
+    if (selfIsBold) {
+      remedy = 'Bold フォントにさらに疑似ボールドが適用されています。PDF 作成元で不要な太字設定を解除して再出力してください';
+    } else if (boldInPdf) {
       remedy = '同 PDF 内に Bold 版が存在します。PDF 作成元で Bold フォントを直接使用して再出力してください';
     } else {
       remedy = 'PDF 作成元で実際の Bold フォントを使用するか、太字の使用を見直してください';
