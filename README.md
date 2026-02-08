@@ -18,9 +18,17 @@ Speaker Deck や SlideShare 等のスライド共有サービスに PDF をア�
 
 ## 使い方
 
+以下の URL でブラウザから利用できる。
+
+https://tomio2480.github.io/pdf-slide-doctor/
+
 1. ブラウザでツールを開く
 2. PDF ファイルをドラッグ＆ドロップするか、ファイル選択ボタンから選ぶ
 3. 診断結果がリスクレベル別に表示される
+
+![PDF Slide Doctor の診断結果画面。リスクレベル別にパターン B（ToUnicode CMap 欠落）とパターン F（疑似ボールド）の検出結果が表示されている](docs/screenshot.png)
+
+図 1: 診断結果の表示例
 
 ## 診断パターン
 
