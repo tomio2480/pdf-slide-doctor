@@ -2,3 +2,4 @@ node_modules/
 dist/
 *.local
 tests/fixtures/*.pdf
+tests/fixtures/testonly/
