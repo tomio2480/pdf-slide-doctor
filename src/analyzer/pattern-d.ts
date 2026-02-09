@@ -1,8 +1,8 @@
 import type { PDFDocumentProxy } from 'pdfjs-dist';
 import type { TextContentItem, DiagnosticItem } from './types';
 
-/** 文字間スペース挿入パターンの正規表現（1 文字 + スペースの繰り返し） */
-const SPACED_LETTERS_PATTERN = /^(\S )+\S$/;
+/** 文字間スペース挿入パターンの正規表現（4 文字以上: 非空白+スペースが 3 回以上 + 末尾 1 文字） */
+const SPACED_LETTERS_PATTERN = /^(\S ){3,}\S$/;
 
 /** D-2 判定の閾値: 1 文字 TextItem の割合 */
 const SINGLE_CHAR_THRESHOLD = 0.5;
@@ -45,7 +45,7 @@ export function detectSpacedLetters(
   >();
 
   for (const item of items) {
-    if (item.str.length < 3) continue;
+    if (item.str.length < 7) continue;
     if (!SPACED_LETTERS_PATTERN.test(item.str)) continue;
 
     let data = fontMap.get(item.fontName);

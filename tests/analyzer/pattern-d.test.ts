@@ -73,9 +73,18 @@ describe('detectSpacedLetters (Pattern D-1)', () => {
     expect(results[0].pageNumbers).toEqual([1, 3]);
   });
 
+  it('3 文字以下のスペース挿入パターンは検出しない', () => {
+    const items: TextContentItem[] = [
+      { str: 'a b', fontName: 'g_d0_f1', pageNumber: 1 },
+      { str: 'a b c', fontName: 'g_d0_f1', pageNumber: 1 },
+    ];
+    const results = detectSpacedLetters(items);
+    expect(results).toHaveLength(0);
+  });
+
   it('examples は最大 5 件に制限する', () => {
     const items: TextContentItem[] = Array.from({ length: 8 }, (_, i) => ({
-      str: `a ${String.fromCharCode(98 + i)}`,
+      str: `a b c ${String.fromCharCode(100 + i)}`,
       fontName: 'g_d0_f1',
       pageNumber: 1,
     }));
