@@ -51,7 +51,7 @@ https://tomio2480.github.io/pdf-slide-doctor/
 
 ### 前提条件
 
-- Node.js 20 以上
+- Node.js 20 以上（ビルド・テスト・開発サーバに使用）
 
 ### セットアップ
 
