@@ -8,6 +8,7 @@ import { extractTextRenderingModes, detectPseudoBold } from './analyzer/pattern-
 import { detectUnembeddedFonts } from './analyzer/pattern-a';
 import { detectMissingToUnicode } from './analyzer/pattern-b';
 import { detectKangxiMismapping } from './analyzer/pattern-c';
+import { extractTextContentItems, detectSpacedLetters, detectSingleCharItems } from './analyzer/pattern-d';
 import { detectBoldUnembedded } from './analyzer/pattern-h';
 import { scanRawFontDicts } from './analyzer/raw-pdf-parser';
 import { refineFontsWithRawScan } from './analyzer/refine-to-unicode';
@@ -55,6 +56,7 @@ async function analyzePdf(file: File): Promise<void> {
 
     const rawFonts = await extractFonts(pdfDoc);
     const trInfos = await extractTextRenderingModes(pdfDoc);
+    const textItems = await extractTextContentItems(pdfDoc);
 
     // raw PDF スキャンで ToUnicode 合成を補正する
     const rawEntries = scanRawFontDicts(rawScanBuffer);
@@ -77,11 +79,20 @@ async function analyzePdf(file: File): Promise<void> {
     const patternB = detectMissingToUnicode(fonts);
     const patternC = detectKangxiMismapping(fonts);
     const patternF = detectPseudoBold(resolvedTrInfos, fonts);
+    const resolvedTextItems = textItems.map((item) => ({
+      ...item,
+      fontName: nameMap.get(item.fontName) ?? item.fontName,
+    }));
+    const patternD = [
+      ...detectSpacedLetters(resolvedTextItems),
+      ...detectSingleCharItems(resolvedTextItems),
+    ];
 
     const allItems: DiagnosticItem[] = [
       ...patternA,
       ...patternB,
       ...patternC,
+      ...patternD,
       ...patternF,
       ...patternH,
     ];

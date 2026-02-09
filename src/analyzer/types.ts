@@ -26,7 +26,7 @@ export interface ToUnicodeMap {
 }
 
 /** 診断パターンの識別子 */
-export type PatternId = 'A' | 'B' | 'C' | 'F' | 'H';
+export type PatternId = 'A' | 'B' | 'C' | 'D' | 'F' | 'H';
 
 /** リスクレベル */
 export type RiskLevel = 'high' | 'medium' | 'low';
@@ -56,6 +56,16 @@ export interface RawFontEntry {
   baseFontName: string;
   /** /ToUnicode キーの有無 (unknown = 検出不能) */
   hasToUnicode: boolean | 'unknown';
+}
+
+/** パターン D 用: getTextContent() から取得したテキスト情報 */
+export interface TextContentItem {
+  /** テキスト文字列 */
+  str: string;
+  /** フォント名 (pdf.js の loadedName) */
+  fontName: string;
+  /** ページ番号 */
+  pageNumber: number;
 }
 
 /** パターン F 用: ページ内のテキストレンダリングモード情報 */
