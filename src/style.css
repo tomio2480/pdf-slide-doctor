@@ -21,8 +21,6 @@
 
 /* リスクレベル別の色分け */
 .risk-high {
-  border-left: 4px solid var(--pico-del-color);
-  padding-left: 1rem;
   margin-bottom: 1rem;
 }
 
@@ -31,9 +29,12 @@
   font-weight: bold;
 }
 
-.risk-medium {
-  border-left: 4px solid #f59e0b;
+.risk-high > article {
+  border-left: 4px solid var(--pico-del-color);
   padding-left: 1rem;
+}
+
+.risk-medium {
   margin-bottom: 1rem;
 }
 
@@ -42,15 +43,23 @@
   font-weight: bold;
 }
 
-.risk-low {
-  border-left: 4px solid var(--pico-ins-color);
+.risk-medium > article {
+  border-left: 4px solid #f59e0b;
   padding-left: 1rem;
+}
+
+.risk-low {
   margin-bottom: 1rem;
 }
 
 .risk-low > summary {
   color: var(--pico-ins-color);
   font-weight: bold;
+}
+
+.risk-low > article {
+  border-left: 4px solid var(--pico-ins-color);
+  padding-left: 1rem;
 }
 
 /* 診断項目 */
