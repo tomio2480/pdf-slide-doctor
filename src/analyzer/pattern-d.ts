@@ -4,11 +4,11 @@ import type { TextContentItem, DiagnosticItem } from './types';
 /** 文字間スペース挿入パターンの正規表現（4 文字以上: 非空白+スペースが 3 回以上 + 末尾 1 文字） */
 const SPACED_LETTERS_PATTERN = /^(\S ){3,}\S$/;
 
-/** D-2 判定の閾値: 1 文字 TextItem の割合 */
-const SINGLE_CHAR_THRESHOLD = 0.5;
+/** D-2: 弧状配置判定の y 座標差の閾値（pt） */
+const ARC_Y_THRESHOLD = 2;
 
-/** D-2 判定の最小 TextItem 数 */
-const MIN_ITEMS_PER_PAGE = 5;
+/** D-2: 弧状配置判定の最小連続文字数 */
+const ARC_MIN_SEQUENCE = 3;
 
 /** 全ページの TextItem を走査して TextContentItem 配列を返す */
 export async function extractTextContentItems(
@@ -26,6 +26,8 @@ export async function extractTextContentItems(
         str: item.str,
         fontName: item.fontName,
         pageNumber: i,
+        y: item.transform[5],
+        hasEOL: item.hasEOL,
       });
     }
 
@@ -74,60 +76,98 @@ export function detectSpacedLetters(
   }));
 }
 
-/** D-2: 1 文字 TextItem の大量出現を検出する */
-export function detectSingleCharItems(
+/** D-2: 弧状配置（各文字が異なる y 座標に配置）を検出する */
+export function detectArcLayoutItems(
   items: TextContentItem[],
 ): DiagnosticItem[] {
-  // ページ別に集計する
-  const pageStats = new Map<
-    number,
-    { total: number; singleChar: number; examples: string[] }
-  >();
+  const detectedPages = new Set<number>();
+  const allExamples: string[] = [];
 
+  // ページ別にグループ化
+  const pageGroups = new Map<number, TextContentItem[]>();
   for (const item of items) {
-    if (item.str === '') continue;
-
-    let stats = pageStats.get(item.pageNumber);
-    if (!stats) {
-      stats = { total: 0, singleChar: 0, examples: [] };
-      pageStats.set(item.pageNumber, stats);
+    let group = pageGroups.get(item.pageNumber);
+    if (!group) {
+      group = [];
+      pageGroups.set(item.pageNumber, group);
     }
-    stats.total++;
-    if (item.str.length === 1) {
-      stats.singleChar++;
-      if (stats.examples.length < 5) {
-        stats.examples.push(item.str);
+    group.push(item);
+  }
+
+  for (const [pageNumber, pageItems] of pageGroups) {
+    const sequences = findArcSequences(pageItems);
+    if (sequences.length > 0) {
+      detectedPages.add(pageNumber);
+      for (const seq of sequences) {
+        if (allExamples.length < 5) {
+          allExamples.push(seq);
+        }
       }
     }
   }
 
-  const detectedPages: number[] = [];
-  const allExamples: string[] = [];
-
-  for (const [pageNumber, stats] of pageStats) {
-    if (stats.total < MIN_ITEMS_PER_PAGE) continue;
-    if (stats.singleChar / stats.total < SINGLE_CHAR_THRESHOLD) continue;
-    detectedPages.push(pageNumber);
-    for (const ex of stats.examples) {
-      if (allExamples.length < 5) allExamples.push(ex);
-    }
-  }
-
-  if (detectedPages.length === 0) return [];
+  if (detectedPages.size === 0) return [];
 
   return [
     {
       patternId: 'D' as const,
       riskLevel: 'medium' as const,
-      fontName: '(複数フォント)',
-      pageNumbers: detectedPages.sort((a, b) => a - b),
-      message: `1 文字ずつ個別に配置されたテキストが検出されました。文字の装飾的配置により、テキスト抽出や検索に影響が出ている可能性があります`,
+      fontName: '(弧状配置)',
+      pageNumbers: Array.from(detectedPages).sort((a, b) => a - b),
+      message:
+        '文字が弧状または装飾的に個別配置されたテキストが検出されました。テキスト抽出や検索に影響が出ている可能性があります',
       remedy:
-        'PDF 作成元で文字の配置方法（弧状配置や個別配置など）を見直すことを検討してください',
+        'PDF 作成元で文字の装飾的な配置（弧状配置や個別回転など）を見直すことを検討してください',
       details: {
-        detectedPageCount: detectedPages.length,
         examples: allExamples,
       },
     },
   ];
+}
+
+/** ページ内の TextItem から弧状配置シーケンスを検出する */
+function findArcSequences(pageItems: TextContentItem[]): string[] {
+  const sequences: string[] = [];
+  let currentSeq: string[] = [];
+  let prevY: number | null = null;
+
+  for (const item of pageItems) {
+    // 空文字列の hasEOL アイテムはスキップ
+    if (item.str === '' && item.hasEOL) continue;
+
+    // 非空白の 1 文字 TextItem のみ対象
+    if (item.str.length === 1 && item.str.trim() !== '') {
+      if (prevY === null) {
+        // シーケンス開始
+        currentSeq = [item.str];
+        prevY = item.y;
+      } else if (Math.abs(item.y - prevY) >= ARC_Y_THRESHOLD) {
+        // y 座標が変化 → 弧状シーケンス継続
+        currentSeq.push(item.str);
+        prevY = item.y;
+      } else {
+        // y 座標が同じ → 弧状ではない、シーケンス打ち切り
+        flushSequence(currentSeq, sequences);
+        currentSeq = [item.str];
+        prevY = item.y;
+      }
+    } else {
+      // 非 1 文字 TextItem → シーケンス打ち切り
+      flushSequence(currentSeq, sequences);
+      currentSeq = [];
+      prevY = null;
+    }
+  }
+
+  // 最後のシーケンスを処理
+  flushSequence(currentSeq, sequences);
+
+  return sequences;
+}
+
+/** 最小長以上のシーケンスを結合文字列として追加する */
+function flushSequence(seq: string[], out: string[]): void {
+  if (seq.length >= ARC_MIN_SEQUENCE) {
+    out.push(seq.join(''));
+  }
 }

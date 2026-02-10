@@ -66,6 +66,10 @@ export interface TextContentItem {
   fontName: string;
   /** ページ番号 */
   pageNumber: number;
+  /** y 座標（transform[5]） */
+  y: number;
+  /** 行末フラグ */
+  hasEOL: boolean;
 }
 
 /** パターン F 用: ページ内のテキストレンダリングモード情報 */

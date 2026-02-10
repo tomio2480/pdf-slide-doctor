@@ -7,7 +7,7 @@ import { extractTextRenderingModes, detectPseudoBold } from '../../src/analyzer/
 import { detectUnembeddedFonts } from '../../src/analyzer/pattern-a';
 import { detectMissingToUnicode } from '../../src/analyzer/pattern-b';
 import { detectKangxiMismapping } from '../../src/analyzer/pattern-c';
-import { extractTextContentItems, detectSpacedLetters, detectSingleCharItems } from '../../src/analyzer/pattern-d';
+import { extractTextContentItems, detectSpacedLetters, detectArcLayoutItems } from '../../src/analyzer/pattern-d';
 import { detectBoldUnembedded } from '../../src/analyzer/pattern-h';
 import { scanRawFontDicts } from '../../src/analyzer/raw-pdf-parser';
 import { refineFontsWithRawScan } from '../../src/analyzer/refine-to-unicode';
@@ -72,7 +72,7 @@ export async function analyzePdf(filePath: string): Promise<AnalysisResult> {
   }));
   const patternD = [
     ...detectSpacedLetters(resolvedTextItems),
-    ...detectSingleCharItems(resolvedTextItems),
+    ...detectArcLayoutItems(resolvedTextItems),
   ];
 
   const items: DiagnosticItem[] = [
