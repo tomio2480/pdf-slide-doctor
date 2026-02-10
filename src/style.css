@@ -1,6 +1,15 @@
 /* PDF Slide Doctor - カスタムスタイル */
 /* Pico CSS のセマンティックスタイルを補完する最小限の CSS */
 
+/* ページ見出し */
+main.container > h1 {
+  margin-top: 2rem;
+}
+
+main.container > h1 + p {
+  margin-bottom: 2rem;
+}
+
 #drop-zone {
   padding: 2rem;
   border: 2px dashed var(--pico-primary);
@@ -9,6 +18,11 @@
   text-align: center;
   cursor: pointer;
   transition: border-color 0.2s, background-color 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 12rem;
 }
 
 #drop-zone:hover {

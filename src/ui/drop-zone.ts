@@ -17,7 +17,7 @@ export function createDropZone(
   section.appendChild(heading);
 
   const description = document.createElement('p');
-  description.textContent = 'ファイルをドラッグ＆ドロップするか、クリックして選択してください';
+  description.textContent = 'ファイルをドラッグ＆ドロップするか、ここをクリックして選択してください';
   section.appendChild(description);
 
   const fileInput = document.createElement('input');
