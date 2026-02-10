@@ -3,15 +3,36 @@
 
 #drop-zone {
   padding: 2rem;
-  border: 2px dashed var(--pico-muted-border-color);
+  border: 2px dashed var(--pico-primary);
   border-radius: var(--pico-border-radius);
+  background-color: var(--pico-card-background-color);
   text-align: center;
-  transition: border-color 0.2s;
+  cursor: pointer;
+  transition: border-color 0.2s, background-color 0.2s;
+}
+
+#drop-zone:hover {
+  border-style: solid;
 }
 
 #drop-zone[aria-busy="true"] {
   border-color: var(--pico-primary);
   border-style: solid;
+}
+
+#drop-zone.has-file {
+  cursor: default;
+  border-style: solid;
+  border-color: var(--pico-ins-color);
+}
+
+#selected-file-info {
+  margin-top: 0.5rem;
+}
+
+#selected-file-name {
+  margin-bottom: 0.5rem;
+  color: var(--pico-muted-color);
 }
 
 #drop-error {

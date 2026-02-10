@@ -17,14 +17,34 @@ export function createDropZone(
   section.appendChild(heading);
 
   const description = document.createElement('p');
-  description.textContent = 'ファイルをドラッグ＆ドロップするか、下のボタンから選択してください';
+  description.textContent = 'ファイルをドラッグ＆ドロップするか、クリックして選択してください';
   section.appendChild(description);
 
   const fileInput = document.createElement('input');
   fileInput.type = 'file';
   fileInput.accept = '.pdf,application/pdf';
   fileInput.id = 'file-input';
+  fileInput.style.display = 'none';
   section.appendChild(fileInput);
+
+  const selectedInfo = document.createElement('div');
+  selectedInfo.id = 'selected-file-info';
+  selectedInfo.style.display = 'none';
+
+  const fileName = document.createElement('p');
+  fileName.id = 'selected-file-name';
+  selectedInfo.appendChild(fileName);
+
+  const changeButton = document.createElement('button');
+  changeButton.textContent = '別のファイルを選ぶ';
+  changeButton.className = 'secondary outline';
+  changeButton.addEventListener('click', (e) => {
+    e.stopPropagation();
+    fileInput.click();
+  });
+  selectedInfo.appendChild(changeButton);
+
+  section.appendChild(selectedInfo);
 
   const errorArea = document.createElement('p');
   errorArea.id = 'drop-error';
@@ -34,6 +54,14 @@ export function createDropZone(
   function showError(message: string): void {
     errorArea.textContent = message;
     callbacks.onError(message);
+  }
+
+  function showSelectedState(file: File): void {
+    heading.textContent = '📄 ' + file.name;
+    description.style.display = 'none';
+    selectedInfo.style.display = '';
+    fileName.textContent = `${(file.size / 1024).toFixed(0)} KB`;
+    section.classList.add('has-file');
   }
 
   function handleFile(file: File): void {
@@ -49,8 +77,14 @@ export function createDropZone(
       return;
     }
 
+    showSelectedState(file);
     callbacks.onFileSelected(file);
   }
+
+  // 枠内全体をクリックでファイル選択
+  section.addEventListener('click', () => {
+    fileInput.click();
+  });
 
   // dragenter/dragleave のカウンター方式で子要素バブリングによる振動を防止する
   let dragCounter = 0;
