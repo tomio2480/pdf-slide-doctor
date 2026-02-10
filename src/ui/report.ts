@@ -76,7 +76,7 @@ function renderItem(item: DiagnosticItem): HTMLElement {
 
   const pages = document.createElement('p');
   const pagesSmall = document.createElement('small');
-  pagesSmall.textContent = `ページ: ${item.pageNumbers.join(', ')}`;
+  pagesSmall.textContent = `📗 ページ: ${item.pageNumbers.join(', ')}`;
   pages.appendChild(pagesSmall);
   article.appendChild(pages);
 
