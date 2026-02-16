@@ -23,6 +23,11 @@ function stripSubsetTag(name: string): string {
   return name.replace(/^[A-Z]{6}\+/, '');
 }
 
+/** pdffonts の type が CID 系（composite フォント）かどうかを判定する */
+function isCidFont(type: string): boolean {
+  return type.includes('CID');
+}
+
 /** expected ディレクトリから pdffonts JSON を読み込む */
 function loadExpected(fileName: string): PdffontsExpected | null {
   const jsonPath = path.join(getExpectedDir(), `${fileName}.pdffonts.json`);
@@ -84,8 +89,9 @@ describe('pdffonts との突き合わせ検証', () => {
       const divergences = knownDivergences[fileName]?.toUnicodeSynthesized ?? [];
 
       // pdffonts で uni=no かつ composite のフォントを抽出する
+      // （非コンポジットフォントは標準エンコーディングによる暗黙マッピングがあるため除外）
       const uniNoFonts = expected.fonts
-        .filter((f) => !f.uni)
+        .filter((f) => !f.uni && isCidFont(f.type))
         .map((f) => stripSubsetTag(f.name));
 
       // pdf-slide-doctor でパターン B として検出されたフォントを抽出する
