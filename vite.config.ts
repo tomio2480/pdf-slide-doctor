@@ -8,12 +8,14 @@ function pdfjsCmaps(): Plugin {
   return {
     name: 'pdfjs-cmaps',
     configureServer(server) {
+      const cmapsDir = path.resolve('node_modules/pdfjs-dist/cmaps');
       // dev サーバーで /cmaps/ リクエストを node_modules から提供する
       server.middlewares.use((req, res, next) => {
         if (req.url?.startsWith('/cmaps/')) {
-          const fileName = req.url.replace('/cmaps/', '');
-          const filePath = path.resolve('node_modules/pdfjs-dist/cmaps', fileName);
-          if (fs.existsSync(filePath)) {
+          const fileName = req.url.slice('/cmaps/'.length).split('?')[0] ?? '';
+          const filePath = path.join(cmapsDir, path.normalize(fileName));
+          // パストラバーサル防止: cmaps ディレクトリ外へのアクセスを拒否する
+          if (filePath.startsWith(cmapsDir + path.sep) && fs.existsSync(filePath)) {
             (res as ServerResponse).writeHead(200, { 'Content-Type': 'application/octet-stream' });
             fs.createReadStream(filePath).pipe(res as ServerResponse);
             return;
