@@ -74,46 +74,48 @@ export async function extractFonts(
 
   for (let i = 1; i <= pdfDoc.numPages; i++) {
     const page: PDFPageProxy = await pdfDoc.getPage(i);
-    const opList = await page.getOperatorList();
+    try {
+      const opList = await page.getOperatorList();
 
-    // OperatorList から setFont で使用されるフォント ID を収集する
-    const fontIds = new Set<string>();
-    for (let j = 0; j < opList.fnArray.length; j++) {
-      if (opList.fnArray[j] === OPS_SET_FONT) {
-        fontIds.add(opList.argsArray[j][0] as string);
+      // OperatorList から setFont で使用されるフォント ID を収集する
+      const fontIds = new Set<string>();
+      for (let j = 0; j < opList.fnArray.length; j++) {
+        if (opList.fnArray[j] === OPS_SET_FONT) {
+          fontIds.add(opList.argsArray[j][0] as string);
+        }
       }
+
+      // 収集したフォント ID について commonObjs からフォントデータを取得する
+      for (const fontId of fontIds) {
+        if (fontMap.has(fontId)) {
+          fontMap.get(fontId)!.pageNumbers.add(i);
+          continue;
+        }
+
+        let fontData: Record<string, unknown>;
+        try {
+          fontData = page.commonObjs.get(fontId) as Record<string, unknown>;
+        } catch {
+          continue;
+        }
+
+        if (!fontData || typeof fontData !== 'object') continue;
+
+        fontMap.set(fontId, {
+          loadedName: (fontData.loadedName as string) ?? fontId,
+          name: (fontData.name as string) ?? 'unknown',
+          type: fontData.type as string | undefined,
+          subtype: fontData.subtype as string | undefined,
+          composite: fontData.composite as boolean | undefined,
+          missingFile: (fontData.missingFile as boolean) ?? false,
+          bold: (fontData.bold as boolean) ?? false,
+          toUnicode: normalizeToUnicode(fontData.toUnicode),
+          pageNumbers: new Set([i]),
+        });
+      }
+    } finally {
+      page.cleanup();
     }
-
-    // 収集したフォント ID について commonObjs からフォントデータを取得する
-    for (const fontId of fontIds) {
-      if (fontMap.has(fontId)) {
-        fontMap.get(fontId)!.pageNumbers.add(i);
-        continue;
-      }
-
-      let fontData: Record<string, unknown>;
-      try {
-        fontData = page.commonObjs.get(fontId) as Record<string, unknown>;
-      } catch {
-        continue;
-      }
-
-      if (!fontData || typeof fontData !== 'object') continue;
-
-      fontMap.set(fontId, {
-        loadedName: (fontData.loadedName as string) ?? fontId,
-        name: (fontData.name as string) ?? 'unknown',
-        type: fontData.type as string | undefined,
-        subtype: fontData.subtype as string | undefined,
-        composite: fontData.composite as boolean | undefined,
-        missingFile: (fontData.missingFile as boolean) ?? false,
-        bold: (fontData.bold as boolean) ?? false,
-        toUnicode: normalizeToUnicode(fontData.toUnicode),
-        pageNumbers: new Set([i]),
-      });
-    }
-
-    page.cleanup();
   }
 
   return Array.from(fontMap.values());
