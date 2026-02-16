@@ -1,0 +1,46 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+
+language: ja-JP
+tone_instructions: "簡潔で建設的なフィードバックを提供してください。"
+
+reviews:
+  profile: chill
+  high_level_summary: true
+  collapse_walkthrough: false
+
+  path_filters:
+    - "!dist/**"
+    - "!node_modules/**"
+    - "!public/pdfjs-cmaps/**"
+
+  path_instructions:
+    - path: "**/*.ts"
+      instructions: |
+        型安全性を重視してください。
+        any 型の使用を指摘してください。
+    - path: "**/*.test.ts"
+      instructions: |
+        Vitest を使用したテストです。
+        テストヘルパーは tests/helpers.ts に集約されています。
+
+  auto_review:
+    enabled: true
+    drafts: false
+    ignore_title_keywords:
+      - "WIP"
+      - "DO NOT MERGE"
+    base_branches:
+      - "main"
+
+  tools:
+    eslint:
+      enabled: true
+    markdownlint:
+      enabled: true
+    gitleaks:
+      enabled: true
+    actionlint:
+      enabled: true
+
+chat:
+  auto_reply: true

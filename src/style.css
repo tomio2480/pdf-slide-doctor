@@ -1,0 +1,120 @@
+/* PDF Slide Doctor - カスタムスタイル */
+/* Pico CSS のセマンティックスタイルを補完する最小限の CSS */
+
+/* ページ見出し */
+main.container > h1 {
+  margin-top: 2rem;
+}
+
+main.container > h1 + p {
+  margin-bottom: 2rem;
+}
+
+#drop-zone {
+  padding: 2rem;
+  border: 2px dashed var(--pico-primary);
+  border-radius: var(--pico-border-radius);
+  background-color: var(--pico-card-background-color);
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background-color 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 12rem;
+}
+
+#drop-zone > * {
+  margin-bottom: 0;
+}
+
+#drop-zone > * + * {
+  margin-top: 0.5rem;
+}
+
+#drop-zone:hover {
+  border-style: solid;
+}
+
+#drop-zone[aria-busy="true"] {
+  border-color: var(--pico-primary);
+  border-style: solid;
+}
+
+#drop-zone.has-file {
+  cursor: default;
+  border-style: solid;
+  border-color: var(--pico-ins-color);
+}
+
+#selected-file-info {
+  margin-top: 0.5rem;
+}
+
+#selected-file-name {
+  margin-bottom: 0.5rem;
+  color: var(--pico-muted-color);
+}
+
+#drop-error {
+  color: var(--pico-del-color);
+}
+
+#drop-error:empty {
+  display: none;
+}
+
+/* リスクレベル別の色分け */
+.risk-high {
+  margin-bottom: 1rem;
+}
+
+.risk-high > summary {
+  color: var(--pico-del-color);
+  font-weight: bold;
+}
+
+.risk-high > article {
+  border-left: 4px solid var(--pico-del-color);
+  padding-left: 1rem;
+}
+
+.risk-medium {
+  margin-bottom: 1rem;
+}
+
+.risk-medium > summary {
+  color: #f59e0b;
+  font-weight: bold;
+}
+
+.risk-medium > article {
+  border-left: 4px solid #f59e0b;
+  padding-left: 1rem;
+}
+
+.risk-low {
+  margin-bottom: 1rem;
+}
+
+.risk-low > summary {
+  color: var(--pico-ins-color);
+  font-weight: bold;
+}
+
+.risk-low > article {
+  border-left: 4px solid var(--pico-ins-color);
+  padding-left: 1rem;
+}
+
+/* 診断項目 */
+#report article {
+  margin-bottom: 0.5rem;
+  padding: 0.75rem;
+}
+
+#report article h4 {
+  margin-bottom: 0.25rem;
+  font-size: 1rem;
+}
