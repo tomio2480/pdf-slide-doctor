@@ -12,6 +12,7 @@ import { extractTextContentItems, detectSpacedLetters, detectArcLayoutItems } fr
 import { detectBoldUnembedded } from './analyzer/pattern-h';
 import { scanRawFontDicts } from './analyzer/raw-pdf-parser';
 import { refineFontsWithRawScan } from './analyzer/refine-to-unicode';
+import type { PDFDocumentProxy } from 'pdfjs-dist';
 import type { DiagnosticReport, DiagnosticItem } from './analyzer/types';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
@@ -43,11 +44,12 @@ async function analyzePdf(file: File): Promise<void> {
   loading.textContent = '解析中...';
   reportContainer.appendChild(loading);
 
+  let pdfDoc: PDFDocumentProxy | undefined;
   try {
     const arrayBuffer = await file.arrayBuffer();
     // pdf.js 用と raw スキャン用にバッファを複製する（pdf.js が ArrayBuffer を detach する場合があるため）
     const rawScanBuffer = arrayBuffer.slice(0);
-    const pdfDoc = await pdfjsLib.getDocument({
+    pdfDoc = await pdfjsLib.getDocument({
       data: new Uint8Array(arrayBuffer),
       fontExtraProperties: true,
       cMapUrl: `${import.meta.env.BASE_URL}cmaps/`,
@@ -105,11 +107,12 @@ async function analyzePdf(file: File): Promise<void> {
     };
 
     renderReport(reportContainer, report);
-    pdfDoc.destroy();
   } catch (error) {
     reportContainer.innerHTML = '';
     const errorP = document.createElement('p');
     errorP.textContent = `解析エラー: ${error instanceof Error ? error.message : String(error)}`;
     reportContainer.appendChild(errorP);
+  } finally {
+    pdfDoc?.destroy();
   }
 }
