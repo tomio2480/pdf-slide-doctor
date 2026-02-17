@@ -12,7 +12,7 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { execSync } from 'node:child_process';
+import { spawnSync } from 'node:child_process';
 import { parsePdffontsOutput } from '../tests/utils/pdffonts-parser.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -22,7 +22,8 @@ const EXPECTED_DIR = path.resolve(FIXTURES_DIR, 'expected');
 /** pdffonts のバージョンを取得する */
 function getPdffontsVersion(): string {
   try {
-    const output = execSync('pdffonts -v 2>&1', { encoding: 'utf-8' });
+    const result = spawnSync('pdffonts', ['-v'], { encoding: 'utf-8' });
+    const output = (result.stdout || '') + (result.stderr || '');
     const match = output.match(/pdffonts version ([\d.]+)/);
     if (match) return `poppler ${match[1]}`;
     // poppler のバージョン形式が異なる場合
@@ -39,18 +40,16 @@ function processFile(pdfPath: string): void {
   const fileName = path.basename(pdfPath);
   console.log(`Processing: ${fileName}`);
 
-  let rawOutput: string;
-  try {
-    rawOutput = execSync(`pdffonts "${pdfPath}"`, { encoding: 'utf-8' });
-  } catch (err: unknown) {
-    const execErr = err as { stderr?: string };
-    console.error(`  Error: ${execErr.stderr ?? String(err)}`);
+  const spawnResult = spawnSync('pdffonts', [pdfPath], { encoding: 'utf-8' });
+  if (spawnResult.error || spawnResult.status !== 0) {
+    console.error(`  Error: ${spawnResult.stderr || spawnResult.error?.message || 'unknown error'}`);
     return;
   }
+  const rawOutput = spawnResult.stdout;
 
   const fonts = parsePdffontsOutput(rawOutput);
 
-  const result = {
+  const output = {
     pdffontsVersion: getPdffontsVersion(),
     fileName,
     generatedAt: new Date().toISOString(),
@@ -66,15 +65,14 @@ function processFile(pdfPath: string): void {
   };
 
   const jsonPath = path.join(EXPECTED_DIR, `${fileName}.pdffonts.json`);
-  fs.writeFileSync(jsonPath, JSON.stringify(result, null, 2) + '\n', 'utf-8');
+  fs.writeFileSync(jsonPath, JSON.stringify(output, null, 2) + '\n', 'utf-8');
   console.log(`  Saved: ${path.relative(process.cwd(), jsonPath)} (${fonts.length} fonts)`);
 }
 
 function main(): void {
   // pdffonts の存在確認
-  try {
-    execSync('pdffonts -v 2>&1', { encoding: 'utf-8' });
-  } catch {
+  const versionCheck = spawnSync('pdffonts', ['-v'], { encoding: 'utf-8' });
+  if (versionCheck.error) {
     console.error('Error: pdffonts command not found.');
     console.error('Install poppler-utils: sudo apt-get install -y poppler-utils');
     process.exit(1);
