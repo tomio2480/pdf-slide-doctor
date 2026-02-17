@@ -43,7 +43,11 @@ describe('raw PDF scan と pdffonts の突き合わせ', () => {
     }
 
     it(`${fileName}: raw scan のフォント検出数が妥当である`, () => {
-      const buffer = fs.readFileSync(pdfFile).buffer;
+      const fileBuffer = fs.readFileSync(pdfFile);
+      const buffer = fileBuffer.buffer.slice(
+        fileBuffer.byteOffset,
+        fileBuffer.byteOffset + fileBuffer.byteLength,
+      );
       const rawEntries = scanRawFontDicts(buffer);
 
       // raw scan で何かしらのフォントが検出されること
@@ -76,7 +80,11 @@ describe('raw PDF scan と pdffonts の突き合わせ', () => {
     });
 
     it(`${fileName}: uni=no のフォントが raw scan で hasToUnicode=false`, () => {
-      const buffer = fs.readFileSync(pdfFile).buffer;
+      const fileBuffer = fs.readFileSync(pdfFile);
+      const buffer = fileBuffer.buffer.slice(
+        fileBuffer.byteOffset,
+        fileBuffer.byteOffset + fileBuffer.byteLength,
+      );
       const rawEntries = scanRawFontDicts(buffer);
 
       // pdffonts で uni=no のフォント
@@ -99,7 +107,11 @@ describe('raw PDF scan と pdffonts の突き合わせ', () => {
     });
 
     it(`${fileName}: uni=yes のフォントが raw scan で hasToUnicode=true`, () => {
-      const buffer = fs.readFileSync(pdfFile).buffer;
+      const fileBuffer = fs.readFileSync(pdfFile);
+      const buffer = fileBuffer.buffer.slice(
+        fileBuffer.byteOffset,
+        fileBuffer.byteOffset + fileBuffer.byteLength,
+      );
       const rawEntries = scanRawFontDicts(buffer);
 
       // pdffonts で uni=yes のフォント
